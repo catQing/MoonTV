@@ -76,6 +76,10 @@
     "ikun": {
       "api": "https://ikunzyapi.com/api.php/provide/vod",
       "name": "iKun资源"
+    },
+    "ikun": {
+      "api": "https://caiji.kuaichezy.org/api.php/provide/vod/?ac=list",
+      "name": "快车资源网"
     }
   }
 }
