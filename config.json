@@ -80,6 +80,14 @@
     "ikun": {
       "api": "https://caiji.kuaichezy.org/api.php/provide/vod/?ac=list",
       "name": "快车资源网"
+    },
+    "liangzi": {
+      "api": "https://cj.lziapi.com/api.php/provide/vod/at/xml/",
+      "name": "量子资源"
+    },
+    "modu": {
+      "api": "https://www.mdzyapi.com/api.php/provide/vod/?ac=list",
+      "name": "魔都资源网"
     }
   }
 }
