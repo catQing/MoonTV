@@ -57,10 +57,38 @@ function PlayPageClient() {
     }
     return true;
   });
+  
+  // 跳过片头片尾设置（从 localStorage 继承，默认 0）
+  const [skipIntro, setSkipIntro] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const v = localStorage.getItem('skip_intro');
+      if (v !== null) return parseInt(v, 10);
+    }
+    return 0;
+  });
+  
+  const [skipOutro, setSkipOutro] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const v = localStorage.getItem('skip_outro');
+      if (v !== null) return parseInt(v, 10);
+    }
+    return 0;
+  });
   const blockAdEnabledRef = useRef(blockAdEnabled);
+  const skipIntroRef = useRef(skipIntro);
+  const skipOutroRef = useRef(skipOutro);
+  
   useEffect(() => {
     blockAdEnabledRef.current = blockAdEnabled;
   }, [blockAdEnabled]);
+  
+  useEffect(() => {
+    skipIntroRef.current = skipIntro;
+  }, [skipIntro]);
+  
+  useEffect(() => {
+    skipOutroRef.current = skipOutro;
+  }, [skipOutro]);
 
   // 视频基本信息
   const [videoTitle, setVideoTitle] = useState(searchParams.get('title') || '');
@@ -1151,9 +1179,137 @@ function PlayPageClient() {
               return newVal ? '当前开启' : '当前关闭';
             },
           },
-        ],
+          {
+            html: '跳过设置',
+            icon: '<svg viewBox="0 0 16 16" width="16" height="16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm-1-9h2v6H7V5zm4 0h2v6h-2V5z" fill="currentColor"/></svg>',
+            selector: [
+              {
+                html: '跳过片头',
+                tooltip: skipIntroRef.current > 0 ? `${skipIntroRef.current}秒` : '未设置',
+                selector: [
+                  {
+                    html: '不跳过',
+                    id: '0',
+                  },
+                  {
+                    html: '5秒',
+                    id: '5',
+                  },
+                  {
+                    html: '10秒',
+                    id: '10',
+                  },
+                  {
+                    html: '15秒',
+                    id: '15',
+                  },
+                  {
+                    html: '20秒',
+                    id: '20',
+                  },
+                  {
+                    html: '30秒',
+                    id: '30',
+                  },
+                  {
+                    html: '60秒',
+                    id: '60',
+                  },
+                  {
+                    html: '自定义',
+                    id: 'custom',
+                  },
+                ],
+                onSelect(item) {
+                  if (item.id === 'custom') {
+                    const customValue = prompt('请输入跳过片头的秒数:', String(skipIntroRef.current));
+                    if (customValue !== null && !isNaN(Number(customValue)) && Number(customValue) >= 0) {
+                      const value = Number(customValue);
+                      localStorage.setItem('skip_intro', String(value));
+                      setSkipIntro(value);
+                      return value > 0 ? `${value}秒` : '未设置';
+                    }
+                  } else {
+                    const value = Number(item.id);
+                    localStorage.setItem('skip_intro', String(value));
+                    setSkipIntro(value);
+                    return value > 0 ? `${value}秒` : '未设置';
+                  }
+                }
+              },
+              {
+                html: '跳过片尾',
+                tooltip: skipOutroRef.current > 0 ? `${skipOutroRef.current}秒` : '未设置',
+                selector: [
+                  {
+                    html: '不跳过',
+                    id: '0',
+                  },
+                  {
+                    html: '5秒',
+                    id: '5',
+                  },
+                  {
+                    html: '10秒',
+                    id: '10',
+                  },
+                  {
+                    html: '15秒',
+                    id: '15',
+                  },
+                  {
+                    html: '20秒',
+                    id: '20',
+                  },
+                  {
+                    html: '30秒',
+                    id: '30',
+                  },
+                  {
+                    html: '60秒',
+                    id: '60',
+                  },
+                  {
+                    html: '自定义',
+                    id: 'custom',
+                  },
+                ],
+                onSelect(item) {
+                  if (item.id === 'custom') {
+                    const customValue = prompt('请输入跳过片尾的秒数:', String(skipOutroRef.current));
+                    if (customValue !== null && !isNaN(Number(customValue)) && Number(customValue) >= 0) {
+                      const value = Number(customValue);
+                      localStorage.setItem('skip_outro', String(value));
+                      setSkipOutro(value);
+                      return value > 0 ? `${value}秒` : '未设置';
+                    }
+                  } else {
+                    const value = Number(item.id);
+                    localStorage.setItem('skip_outro', String(value));
+                    setSkipOutro(value);
+                    return value > 0 ? `${value}秒` : '未设置';
+                  }
+                }
+              },
+            ],
+          },
+        ]
         // 控制栏配置
         controls: [
+          {
+            position: 'left',
+            index: 12,
+            html: '<i class="art-icon flex"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 5v12l8.5-6L6 5zm8.5 0v12l4-6-4-6z" fill="currentColor"/></svg></i>',
+            tooltip: '跳过片头',
+            click: function () {
+              if (skipIntroRef.current > 0) {
+                artPlayerRef.current.currentTime = skipIntroRef.current;
+                artPlayerRef.current.notice.show = `已跳过片头 ${skipIntroRef.current} 秒`;
+              } else {
+                artPlayerRef.current.notice.show = '请先在设置中配置跳过片头时间';
+              }
+            }
+          },
           {
             position: 'left',
             index: 13,
@@ -1233,6 +1389,31 @@ function PlayPageClient() {
           saveCurrentPlayProgress();
           lastSaveTimeRef.current = now;
         }
+        
+        // Skip intro logic
+        if (skipIntroRef.current > 0 && artPlayerRef.current.currentTime < skipIntroRef.current + 2 && artPlayerRef.current.currentTime >= skipIntroRef.current) {
+          artPlayerRef.current.notice.show = `已跳过片头 ${skipIntroRef.current} 秒`;
+          artPlayerRef.current.currentTime = skipIntroRef.current;
+        }
+        
+        // Skip outro logic (only for episodes with known duration)
+        if (skipOutroRef.current > 0 && artPlayerRef.current.duration > 0) {
+          const timeLeft = artPlayerRef.current.duration - artPlayerRef.current.currentTime;
+          if (timeLeft <= skipOutroRef.current && timeLeft > 1) {
+            // Auto skip to next episode if available
+            const d = detailRef.current;
+            const idx = currentEpisodeIndexRef.current;
+            if (d && d.episodes && idx < d.episodes.length - 1) {
+              artPlayerRef.current.notice.show = `即将跳到下一集...`;
+              setTimeout(() => {
+                setCurrentEpisodeIndex(idx + 1);
+              }, 1000);
+            } else {
+              // Just show a notice if it's the last episode
+              artPlayerRef.current.notice.show = `片尾还有 ${Math.round(timeLeft)} 秒`;
+            }
+          }
+        }
       });
 
       artPlayerRef.current.on('pause', () => {
@@ -1249,7 +1430,7 @@ function PlayPageClient() {
       console.error('创建播放器失败:', err);
       setError('播放器初始化失败');
     }
-  }, [Artplayer, Hls, videoUrl, loading, blockAdEnabled]);
+  }, [Artplayer, Hls, videoUrl, loading, blockAdEnabled, skipIntro, skipOutro]);
 
   // 当组件卸载时清理定时器
   useEffect(() => {
