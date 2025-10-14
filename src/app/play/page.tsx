@@ -1293,7 +1293,7 @@ function PlayPageClient() {
               },
             ],
           },
-        ]
+        ],
         // 控制栏配置
         controls: [
           {
