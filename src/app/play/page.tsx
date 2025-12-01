@@ -1293,7 +1293,7 @@ function PlayPageClient() {
               },
             ],
           },
-        ],
+        ]
         // 控制栏配置
         controls: [
           {
@@ -1398,6 +1398,25 @@ function PlayPageClient() {
 
           artPlayerRef.current.currentTime = skipIntroRef.current;
 
+        }
+        
+        // Skip outro logic (only for episodes with known duration)
+        if (skipOutroRef.current > 0 && artPlayerRef.current.duration > 0) {
+          const timeLeft = artPlayerRef.current.duration - artPlayerRef.current.currentTime;
+          if (timeLeft <= skipOutroRef.current && timeLeft > 1) {
+            // Auto skip to next episode if available
+            const d = detailRef.current;
+            const idx = currentEpisodeIndexRef.current;
+            if (d && d.episodes && idx < d.episodes.length - 1) {
+              artPlayerRef.current.notice.show = `即将跳到下一集...`;
+              setTimeout(() => {
+                setCurrentEpisodeIndex(idx + 1);
+              }, 1000);
+            } else {
+              // Just show a notice if it's the last episode
+              artPlayerRef.current.notice.show = `片尾还有 ${Math.round(timeLeft)} 秒`;
+            }
+          }
         }
       });
 
