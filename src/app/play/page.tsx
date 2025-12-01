@@ -1391,13 +1391,9 @@ function PlayPageClient() {
         }
         
         // Skip intro logic
-
-        if (skipIntroRef.current > 0 && artPlayerRef.current.currentTime <= skipIntroRef.current) {
-
+        if (skipIntroRef.current > 0 && artPlayerRef.current.currentTime < skipIntroRef.current + 2 && artPlayerRef.current.currentTime >= skipIntroRef.current) {
           artPlayerRef.current.notice.show = `已跳过片头 ${skipIntroRef.current} 秒`;
-
           artPlayerRef.current.currentTime = skipIntroRef.current;
-
         }
         
         // Skip outro logic (only for episodes with known duration)
