@@ -77,6 +77,7 @@ function PlayPageClient() {
   const blockAdEnabledRef = useRef(blockAdEnabled);
   const skipIntroRef = useRef(skipIntro);
   const skipOutroRef = useRef(skipOutro);
+  const hasProcessedOutroRef = useRef(false);
   
   useEffect(() => {
     blockAdEnabledRef.current = blockAdEnabled;
@@ -114,6 +115,11 @@ function PlayPageClient() {
   }, [needPrefer]);
   // 集数相关
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0);
+
+  // 当集数变化时，重置跳过片尾处理状态
+  useEffect(() => {
+    hasProcessedOutroRef.current = false;
+  }, [currentEpisodeIndex]);
 
   const currentSourceRef = useRef(currentSource);
   const currentIdRef = useRef(currentId);
@@ -1294,7 +1300,7 @@ function PlayPageClient() {
             ],
           },
         ],
-        // 控制栏配置
+        // 鎺у埗鏍忛厤缃?
         controls: [
           {
             position: 'left',
@@ -1391,15 +1397,17 @@ function PlayPageClient() {
         }
         
         // Skip intro logic
-        if (skipIntroRef.current > 0 && artPlayerRef.current.currentTime < skipIntroRef.current + 2 && artPlayerRef.current.currentTime >= skipIntroRef.current) {
+        if (skipIntroRef.current > 0 && artPlayerRef.current.currentTime < skipIntroRef.current) {
+          // 只有当当前时间小于跳过时间时才跳转，避免等于时重复触发
           artPlayerRef.current.notice.show = `已跳过片头 ${skipIntroRef.current} 秒`;
           artPlayerRef.current.currentTime = skipIntroRef.current;
         }
         
         // Skip outro logic (only for episodes with known duration)
-        if (skipOutroRef.current > 0 && artPlayerRef.current.duration > 0) {
+        if (skipOutroRef.current > 0 && artPlayerRef.current.duration > 0 && !hasProcessedOutroRef.current) {
           const timeLeft = artPlayerRef.current.duration - artPlayerRef.current.currentTime;
           if (timeLeft <= skipOutroRef.current && timeLeft > 1) {
+            hasProcessedOutroRef.current = true;
             // Auto skip to next episode if available
             const d = detailRef.current;
             const idx = currentEpisodeIndexRef.current;
